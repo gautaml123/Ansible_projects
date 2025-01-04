@@ -1,0 +1,48 @@
+---
+# Error Handling
+  - hosts: all
+    become: true
+    gather_facts: false
+    
+    tasks:
+      - name: Check if openssh and openssl is upto latest version
+        ansible.builtin.apt:
+          name: "{{ item }}"
+          state: latest
+        loop:
+          - openssh
+          - openssl
+        ignore_errors: true
+
+      - name: Check docker
+        ansible.builtin.command: docker --version
+        register: result
+        ignore_errors: true
+
+      - name: Update all packages
+        ansible.builtin.apt:
+          name: "*"
+          update_cache: yes
+
+      - name: Install docker and containers if not installed
+        ansible.builtin.apt:
+          name: 
+            - containerd
+            - docker.io
+          state: present
+        when:
+          result.failed == true
+        register: new_result
+
+      - name: Print result
+        ansible.builtin.debug:
+          var: new_result
+
+      - name: Start Docker if it's installed
+        ansible.builtin.service:
+          name: docker
+          state: started
+      
+          
+
+    
