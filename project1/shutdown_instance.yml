@@ -1,0 +1,10 @@
+---
+- name: Shutdown ubuntu instances
+  hosts: all
+  become: true
+  gather_facts: true
+  tasks:
+  - name: Shutdown EC2 instance
+    shell: "shutdown -t now"  
+    when:
+      ansible_os_family == "Debian"
